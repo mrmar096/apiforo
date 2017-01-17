@@ -7,7 +7,7 @@ require_once 'model/connection/connectionDB.php';
  * Date: 06/11/2016
  * Time: 11:36
  */
-class daoUsuario
+class DaoUsuario
 {
     /** *************************************************/
     /**TABLE USER*/

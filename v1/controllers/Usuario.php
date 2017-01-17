@@ -211,7 +211,7 @@ class Usuario
     /**USER*/
     //**SELECT**//
     public static function login($jsonobj){
-        $dao=new DaoTema();
+        $dao=new DaoUsuario();
         try{
             return $dao->login($jsonobj);
         }catch(PDOException $e){
@@ -219,7 +219,7 @@ class Usuario
         }
     }
     public static function getAllUsers(){
-        $dao= new DaoTema();
+        $dao= new DaoUsuario();
         try{
             $resultados=$dao->getAllUsers();
         }catch(PDOException $e){
@@ -228,7 +228,7 @@ class Usuario
         return $resultados;
     }
     public static function getOneUser($id){
-        $dao= new DaoTema();
+        $dao= new DaoUsuario();
         try{
             $resultado=$dao->getOneUser($id);
         }catch(PDOException $e){
@@ -239,7 +239,7 @@ class Usuario
 
     //**INSERT**//
     public static function registarUser($jsonobj){
-        $dao=new DaoTema();
+        $dao=new DaoUsuario();
         try{
             return $dao->registarUser($jsonobj);
         }catch(PDOException $e){
@@ -248,7 +248,7 @@ class Usuario
     }
     //**UPDATE**//
     public static function updateUser($jsonobj, $id){
-        $dao=new DaoTema();
+        $dao=new DaoUsuario();
         try{
             return $dao->updateupdateUser($jsonobj,$id);
         }catch(PDOException $e){
@@ -256,7 +256,7 @@ class Usuario
         }
     }
     public static function updateAvatar($src, $id){
-        $dao=new DaoTema();
+        $dao=new DaoUsuario();
         try{
             return $dao->updateAvatar($src,$id);
         }catch(PDOException $e){
@@ -266,7 +266,7 @@ class Usuario
 
     //**DELETE**//
     public static function delUser($id){
-        $dao=new DaoTema();
+        $dao=new DaoUsuario();
         try{
             return $dao->delUser($id);
         }catch(PDOException $e){
@@ -279,7 +279,7 @@ class Usuario
     /**TEMAS ASOCIADOS*/
     //**SELECT**//
     public static function getTemasbyUserID($id){
-        $dao= new DaoTema();
+        $dao= new DaoUsuario();
         try{
             $resultado=$dao->getTemasbyUserID($id);
         }catch(PDOException $e){
@@ -290,7 +290,7 @@ class Usuario
 
     //**DELETE**//
     public static function delAsocUserTema($iduser, $idtema,$idcomentario){
-        $dao=new DaoTema();
+        $dao=new DaoUsuario();
         try{
             return $dao->delAsocUserTema($iduser,$idtema,$idcomentario);
         }catch(PDOException $e){
