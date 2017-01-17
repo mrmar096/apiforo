@@ -29,7 +29,7 @@ class Usuario
             }else{
                 throw new ExceptionApi(ExceptionApi::EMTPY_QUERY, "Sin Resultado", 400);
             }
-        }elseif(empty($peticion[1])){
+        }elseif(!empty($peticion[0]) && empty($peticion[1])){
             //SACAMOS UN USUARIO ESPECIFICO
             $id=$peticion[0];
             $usuario= self::getOneUser($id);
@@ -171,9 +171,9 @@ class Usuario
         }elseif(!empty($peticion[1]) && $peticion[1]==Api::R_USARIO_AVATAR && empty($peticion[2])){
             //AQUI BORRAREMOS EL AVATAR ASOCIADO A UN USUARIO
             $iduser = $peticion[0];
+            $filepath=self::getOneUser($iduser)['avatar'];
             $resultado = self::updateAvatar(null,$iduser);
             if ($resultado) {
-                $filepath=self::getOneUser($iduser)->{'avatar'};
                 unlink($filepath);
                 http_response_code(200);
                 return ["estado" => ExceptionApi::EXITO, "mensaje" => utf8_encode("Avatar eliminado con exito")];

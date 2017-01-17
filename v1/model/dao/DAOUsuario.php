@@ -36,7 +36,7 @@ class DaoUsuario
     public function getAllUsers(){
         $conexion=new ConnectionDB();
         $objPdo=$conexion->getPDO();
-        $sql="select u.id,u.username,u.avatar,u.nombre,u.email from usuarios";
+        $sql="select u.id,u.username,u.avatar,u.nombre,u.email from usuarios u";
         $statement=$objPdo->prepare($sql);
         $resultado=array();
         try {
