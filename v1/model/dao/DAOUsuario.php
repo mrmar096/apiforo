@@ -15,7 +15,7 @@ class DaoUsuario
     public function login($obj){
         $conexion=new ConnectionDB();
         $objPdo=$conexion->getPDO();
-        $sql="select pass from usarios where username='".$obj->{'username'}."'";
+        $sql="select pass from usuarios where username='".$obj->{'username'}."'";
         $statement=$objPdo->prepare($sql);
         $resultado=null;
         try {
@@ -36,7 +36,7 @@ class DaoUsuario
     public function getAllUsers(){
         $conexion=new ConnectionDB();
         $objPdo=$conexion->getPDO();
-        $sql="select u.username,u.avatar,u.nombre,u.email from usuarios";
+        $sql="select u.id,u.username,u.avatar,u.nombre,u.email from usuarios";
         $statement=$objPdo->prepare($sql);
         $resultado=array();
         try {
@@ -56,7 +56,7 @@ class DaoUsuario
     public function getOneUser($id){
         $conexion=new ConnectionDB();
         $objPdo=$conexion->getPDO();
-        $sql='select u.username,u.avatar,u.nombre,u.email from usuarios u  where id=?';
+        $sql='select u.id, u.username,u.avatar,u.nombre,u.email from usuarios u  where id=?';
         $statement=$objPdo->prepare($sql);
         $statement->bindParam("1", $id);
         $resultado=null;
@@ -75,7 +75,7 @@ class DaoUsuario
     }
 
     //**INSERT**//
-    public function registrar($obj){
+    public function registarUser($obj){
         //Miro a ver si tiene alguna key que lleve pass para encriptarla
         $tablename="usuarios";
         if(!empty($obj->{'pass'})){
@@ -116,14 +116,13 @@ class DaoUsuario
         $tablename="usuarios";
         $where= array("id"=>$id);
         $sql=$this->generaCadenaSqlUpdate($tablename,$obj,$where);
-
         $statement=$objPdo->prepare($sql);
         try {
             $objPdo->beginTransaction();
             $resultado=$statement->execute();
             $objPdo->commit();
             if($resultado){
-                return $this->getOne($obj->{'username'});
+                return $this->getOneUser($id);
             }
         } catch (PDOException $e) {
             throw $e;
@@ -156,13 +155,12 @@ class DaoUsuario
         return $resultado;
     }
     //**DELETE**//
-    public function deleteUser($id){
+    public function delUser($id){
         $conection= new ConnectionDB();
         $objPdo=$conection->getPDO();
-        $tablename="usuarios";
         $sql="delete from usuarios where id=".$id;
-
         $statement=$objPdo->prepare($sql);
+        $resultado=null;
         try {
             $objPdo->beginTransaction();
             $statement->execute();
@@ -175,7 +173,7 @@ class DaoUsuario
             $objPdo=NULL;
             $statement=NULL;
         }
-        return null;
+        return $resultado;
     }
 
     /** *************************************************/
@@ -184,7 +182,7 @@ class DaoUsuario
     public function getTemasbyUserID($id){
         $conexion=new ConnectionDB();
         $objPdo=$conexion->getPDO();
-        $sql='select t.* from temas t, comentarios c where t.id=c.id and c.usuario=? oder by t.fecha';
+        $sql='select * from temas where autor=? order by fecha';
         $statement=$objPdo->prepare($sql);
         $statement->bindParam("1",$id);
         $resultado=null;
@@ -201,15 +199,13 @@ class DaoUsuario
         return $resultado;
     }
     //**DELETE**//
-    public function delAsocUserTema($iduser,$idtema,$idcomentario){
+    public function delAsocUserTema($iduser,$idtema){
         $conection= new ConnectionDB();
         $objPdo=$conection->getPDO();
-        if(is_null($idtema)&& is_null($idcomentario)){
+        if(is_null($idtema)){
             $sql = 'delete from comentarios where usuario='.$iduser;
-        }elseif(!is_null($idtema)&& is_null($idcomentario)){
-            $sql = 'delete from comentarios where tema='.$idtema.' and usuario='.$iduser;
         }else{
-            $sql='delete from comentarios where tema='.$idtema.' and usuario='.$iduser.' and id='.$idcomentario;
+            $sql='delete from comentarios where tema='.$idtema.' and usuario='.$iduser;
         }
         $statement=$objPdo->prepare($sql);
         $resultado=null;
@@ -242,7 +238,7 @@ class DaoUsuario
     }
     public function generaCadenaSqlUpdate($tablename,$obj,$where){
         $values=(array)$obj;
-        $sql="update usuarios set ";
+        $sql="update $tablename set ";
         $end=count($values);
         $coma=",";
         $and="and";
@@ -251,23 +247,29 @@ class DaoUsuario
             if ($i==$end) {
                 $coma = "";
             }
-            if(is_string($v)){
-                $sql.=$k."='".$v."'".$coma;
-            }else{
+            if(is_numeric($v)){
                 $sql.=$k."=".$v.$coma;
+
+            }else{
+                $sql.=$k."='".$v."'".$coma;
             }
+            $i++;
         }
         $sql.=" where ";
+        $i=1;
         //Ponemos el where
+        $end=count($where);
         foreach($where as $k => $v) {
             if ($i==$end) {
                 $and = "";
             }
-            if(is_string($v)){
-                $sql.=$k."='".$v."'".$and;
-            }else{
+            if(is_numeric($v)){
                 $sql.=$k."=".$v.$and;
+
+            }else{
+                $sql.=$k."='".$v."'".$and;
             }
+            $i++;
         }
         return $sql;
     }
@@ -294,10 +296,11 @@ class DaoUsuario
             if ($i==$end) {
                 $coma = "";
             }
-            if(is_string($v)){
-                $sql.="'".$v."'".$coma;
-            }else{
+            if(is_numeric($v)){
                 $sql.=$v.$coma;
+
+            }else{
+                $sql.="'".$v."'".$coma;
             }
             $i++;
         }

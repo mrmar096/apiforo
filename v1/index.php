@@ -5,6 +5,7 @@ require_once 'views/viewjson.php';
 require_once 'views/viewxml.php';
 require_once 'controllers/UserApi.php';
 require_once 'controllers/Usuario.php';
+require_once 'controllers/Tema.php';
 require_once 'utilities/ExceptionApi.php';
 
 
@@ -13,7 +14,7 @@ $peticion=$_GET['PATH_INFO'];
 //CONEVERTIMOS EN UN ARRAY LA URL SEPARADA POR /
 $peticion=explode("/",$peticion);
 
-//NOS QUEDAMOS CON EL PRIMER ELEMENTO
+//NOS QUEDAMOS CON EL PRIMER ELEMENTO SACANDOLO DEL ARRAY
 $recurso_pedido=array_shift($peticion);
 
 //LEEMOS SI NOS HAN PEDIDO UN FORMATO O OTRO

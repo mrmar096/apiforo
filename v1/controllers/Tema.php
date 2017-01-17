@@ -22,27 +22,26 @@ class Tema
         if(!empty($peticion[0]) && !empty($peticion[1]) && $peticion[1]==Api::R_COMENTARIOS && !empty($peticion[2])){
             //SACAMOS UN COMENTARIO RELACIONADO CON UN TEMA
             $idtema=$peticion[0];
-            $idcomentario=$peticion[1];
+            $idcomentario=$peticion[2];
             $comentario= self::getComentariosFromTema($idcomentario,$idtema);
-            if(!empty($temas)){
+            if(!empty($comentario)){
                 http_response_code(200);
-                return ["estado"=>ExceptionApi::EXITO,"comentario"=>$comentario];
+                return ["estado"=>ExceptionApi::EXITO,"comentario"=>(array)$comentario];
             }else{
                 throw new ExceptionApi(ExceptionApi::EMTPY_QUERY, "Sin Resultado", 400);
             }
-
-        }elseif($peticion[1]==Api::R_COMENTARIOS && empty($peticion[2])){
+        }elseif(!empty($peticion[1]) && $peticion[1]==Api::R_COMENTARIOS && empty($peticion[2])){
             //SACAMOS TODOS LOS COMENTARIOS RELACIONADOS CON UN TEMA
             $idtema=$peticion[0];
             $comentarios= self::getComentariosFromTema(null,$idtema);
-            if(!empty($temas)){
+            if(!empty($comentarios)){
                 http_response_code(200);
                 return ["estado"=>ExceptionApi::EXITO,"comentarios"=>$comentarios];
             }else{
                 throw new ExceptionApi(ExceptionApi::EMTPY_QUERY, "Sin Resultado", 400);
             }
 
-        }elseif(empty($peticion[1])){
+        }elseif(!empty($peticion[0]) && empty($peticion[1])){
             //SACAMOS UN TEMA ESPECIFICO
             $idtema=$peticion[0];
             $tema= self::getOneTema($idtema);
@@ -92,7 +91,7 @@ class Tema
                 throw new ExceptionApi(ExceptionApi::FALLIDO,"Ha ocurrido un error durante el registro");
             }
 
-        }elseif(empty($peticion[0])) {
+        }elseif(!empty($peticion[0]) &&  $peticion[0]==Api::R_TEMA_REGISTER && empty($peticion[1])) {
             //REGISTRO NUEVO TEMA
             $cuerpo=file_get_contents('php://input');
             $jsonobj=json_decode($cuerpo);
@@ -114,8 +113,30 @@ class Tema
         }
     }
     public static function delete($peticion){
-        if (!empty($peticion[0]) && empty($peticion[1])) {
-            //TEMA
+        if(!empty($peticion[0]) && !empty($peticion[1]) && $peticion[1]==Api::R_COMENTARIOS && !empty($peticion[2])) {
+            //COMENTARIO DE UN TEMA
+            $idtema=$peticion[0];
+            $idcomentario=$peticion[2];
+            $resultado= self::delComentariosFromTema($idcomentario,$idtema);
+            if($resultado){
+                http_response_code(200);
+                return ["estado"=>ExceptionApi::EXITO,"mensaje"=>utf8_encode("Comentario eliminado con exito")];
+            }else{
+                throw new ExceptionApi(ExceptionApi::FALLIDO,"Ha ocurrido un error durante la eliminacion");
+            }
+
+        }elseif(!empty($peticion[0]) && !empty($peticion[1]) && empty($peticion[2])) {
+            //TODOS LOS COMENTARIOS DE UN TEMA
+            $idtema=$peticion[0];
+            $resultado= self::delComentariosFromTema(null,$idtema);
+            if($resultado){
+                http_response_code(200);
+                return ["estado"=>ExceptionApi::EXITO,"mensaje"=>utf8_encode("Comentarios eliminados con exito")];
+            }else{
+                throw new ExceptionApi(ExceptionApi::FALLIDO,"Ha ocurrido un error durante la eliminacion");
+            }
+        }elseif (!empty($peticion[0]) && empty($peticion[1])) {
+            //TEMA ENTERO
             $id=$peticion[0];
             $resultado= self::delTema($id);
             if($resultado){
@@ -191,6 +212,7 @@ class Tema
             throw new ExceptionApi(ExceptionApi::ERRORBD,$e->getMessage());
         }
     }
+    //*DELETE**//
     public static function delComentariosFromTema($idcomentario,$idtema){
         $dao=new DaoTema();
         try{
@@ -234,19 +256,6 @@ class Tema
     public static function checkJson($jsonobj)
     {
         if(is_null($jsonobj))throw new ExceptionApi(ExceptionApi::FALLIDO,"Revisa la estructura json");
-    }
-    public static function refreshlocation($username, $jsonobj){
-        if(!is_numeric($jsonobj->{'lat'}) || !is_numeric($jsonobj->{'lon'})){
-            throw new ExceptionApi(ExceptionApi::PARAMSINCORRECT,"La latitud y la longitud debe ser numerica");
-        }
-        $dao=new DaoTema();
-        try{
-            if($dao->updateLocation($username,$jsonobj)>0)return true;
-        }catch(PDOException $e){
-            throw new ExceptionApi(ExceptionApi::ERRORBD,$e->getMessage());
-        }
-
-        return false;
     }
     public static function limpiarnulljson(&$obj){
         $obj = (object) array_filter((array) $obj, function ($val) {

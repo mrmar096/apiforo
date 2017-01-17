@@ -29,7 +29,6 @@ class Usuario
             }else{
                 throw new ExceptionApi(ExceptionApi::EMTPY_QUERY, "Sin Resultado", 400);
             }
-
         }elseif(empty($peticion[1])){
             //SACAMOS UN USUARIO ESPECIFICO
             $id=$peticion[0];
@@ -40,7 +39,6 @@ class Usuario
             }else{
                 throw new ExceptionApi(ExceptionApi::EMTPY_QUERY, "Sin resultados", 400);
             }
-
         }elseif(empty($peticion[0])){
             //OBTENER TODOS LOS USUARIOS DEL FORO
             //LEEMOS LOS GET
@@ -55,7 +53,6 @@ class Usuario
             }else{
                 throw new ExceptionApi(ExceptionApi::EMTPY_QUERY, "Sin resultados");
             }
-
         }else{
             throw new ExceptionApi(ExceptionApi::PARAMSINCORRECT, "Url mal formada");
         }
@@ -150,44 +147,34 @@ class Usuario
         }
     }
     public static function delete($peticion){
-        if(!empty($peticion[0]) && !empty($peticion[1]) && $peticion[1]==Api::R_TEMAS && !empty($peticion[2]) && !empty($peticion[3]) && $peticion[3]==Api::R_COMENTARIOS && !empty($peticion[4]) ){
-            //AQUI BORRAREMOS UN COMENTARIO RELACIONADO A UN TEMA ESPECIFICO QUE HA ESCRITO A UN USUARIO
+        if(!empty($peticion[0]) && !empty($peticion[1]) && $peticion[1]==Api::R_TEMAS && !empty($peticion[2]) && empty($peticion[3])){
+            //AQUI BORRAREMOS LOS COMENTARIOS DE UN USUARIO EN UN TEMA ASOCIADO
             $iduser = $peticion[0];
             $idtema = $peticion[2];
-            $idcomentario=$peticion[4];
-            $resultado = self::delAsocUserTema($iduser, $idtema,$idcomentario);
-            if ($resultado) {
-                http_response_code(200);
-                return ["estado" => ExceptionApi::EXITO, "mensaje" => utf8_encode("Comentario eliminado con exito")];
-            } else {
-                throw new ExceptionApi(ExceptionApi::FALLIDO, "Ha ocurrido un error durante la eliminacion");
-            }
-        }elseif($peticion[1]==Api::R_TEMAS && !empty($peticion[2]) && empty($peticion[3])){
-            //AQUI BORRAREMOS UN TEMA ASOCIADO A UN USUARIO
-            $iduser = $peticion[0];
-            $idtema = $peticion[2];
-            $resultado = self::delAsocUserTema($iduser, $idtema,null);
+            $resultado = self::delAsocUserTema($iduser, $idtema);
             if ($resultado > 0) {
                 http_response_code(200);
                 return ["estado" => ExceptionApi::EXITO, "mensaje" => utf8_encode("Tema asocaiado eliminado con exito")];
             } else {
                 throw new ExceptionApi(ExceptionApi::FALLIDO, "Ha ocurrido un error durante la eliminacion");
             }
-        }elseif($peticion[1]==Api::R_TEMAS && empty($peticion[2])){
-            //AQUI BORRAREMOS TODOS TEMAS ASOCIADOS A UN USUARIO
+        }elseif( !empty($peticion[1]) && $peticion[1]==Api::R_TEMAS && empty($peticion[2])){
+            //AQUI BORRAREMOS TODOS LOS COMENTARIOS DE TODOS TEMAS ASOCIADOS A UN USUARIO
             $iduser = $peticion[0];
-            $resultado = self::delAsocUserTema($iduser,null,null);
+            $resultado = self::delAsocUserTema($iduser,null);
             if ($resultado) {
                 http_response_code(200);
                 return ["estado" => ExceptionApi::EXITO, "mensaje" => utf8_encode("Temas asocaiados eliminados con exito")];
             } else {
                 throw new ExceptionApi(ExceptionApi::FALLIDO, "Ha ocurrido un error durante la eliminacion");
             }
-        }elseif($peticion[1]==Api::R_USARIO_AVATAR && empty($peticion[2])){
+        }elseif(!empty($peticion[1]) && $peticion[1]==Api::R_USARIO_AVATAR && empty($peticion[2])){
             //AQUI BORRAREMOS EL AVATAR ASOCIADO A UN USUARIO
             $iduser = $peticion[0];
             $resultado = self::updateAvatar(null,$iduser);
             if ($resultado) {
+                $filepath=self::getOneUser($iduser)->{'avatar'};
+                unlink($filepath);
                 http_response_code(200);
                 return ["estado" => ExceptionApi::EXITO, "mensaje" => utf8_encode("Avatar eliminado con exito")];
             } else {
@@ -250,7 +237,7 @@ class Usuario
     public static function updateUser($jsonobj, $id){
         $dao=new DaoUsuario();
         try{
-            return $dao->updateupdateUser($jsonobj,$id);
+            return $dao->updateUser($jsonobj,$id);
         }catch(PDOException $e){
             throw new ExceptionApi(ExceptionApi::ERRORBD,$e->getMessage());
         }
@@ -289,10 +276,10 @@ class Usuario
     }
 
     //**DELETE**//
-    public static function delAsocUserTema($iduser, $idtema,$idcomentario){
+    public static function delAsocUserTema($iduser, $idtema){
         $dao=new DaoUsuario();
         try{
-            return $dao->delAsocUserTema($iduser,$idtema,$idcomentario);
+            return $dao->delAsocUserTema($iduser,$idtema);
         }catch(PDOException $e){
             throw new ExceptionApi(ExceptionApi::ERRORBD,$e->getMessage());
         }
