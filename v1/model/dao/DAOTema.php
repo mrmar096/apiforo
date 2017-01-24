@@ -225,7 +225,7 @@ class DaoTema
 
     }
 
-    public function generaCadenaSqlInsert($obj,$tablename){
+     public function generaCadenaSqlInsert($obj,$tablename){
         $values=(array)$obj;
         $sql="insert into ".$tablename." (";
         $coma=",";
@@ -248,10 +248,10 @@ class DaoTema
             if ($i==$end) {
                 $coma = "";
             }
-            if(is_string($v)){
-                $sql.="'".$v."'".$coma;
-            }else{
+            if(is_numeric($v)){
                 $sql.=$v.$coma;
+            }else{
+                $sql.="'".$v."'".$coma;
             }
             $i++;
         }
